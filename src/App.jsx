@@ -1,48 +1,63 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import { useState, useEffect } from 'react';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import Dashboard from './pages/Dashboard';
-import AllEvents from './pages/AllEvents';
-import ProtectedRoute from './components/ProtectedRoute';
+import { Routes, Route, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
+import Navbar from './components/Navbar'
+import Footer from './components/Footer'
+import Home from './pages/Home'
+import Projects from './pages/Projects'
+import Properties from './pages/Properties'
+import About from './pages/About'
+import Contact from './pages/Contact'
+import History from './pages/History'
+import WelfareMedia from './pages/WelfareMedia'
+import AdminLogin from './pages/AdminLogin'
+import AdminDashboard from './pages/admin/Dashboard'
+import ProjectDetails from './pages/ProjectDetails'
+import PropertyDetails from './pages/PropertyDetails'
+import Blog from './pages/Blog'
+import BlogDetails from './pages/BlogDetails'
+import PrivateEnquiryModal from './components/PrivateEnquiryModal'
+import TopBanner from './components/TopBanner'
+import { useState } from 'react'
 
 function App() {
-  const [user, setUser] = useState(null);
+  const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
+  const location = useLocation();
+  const isDashboardRoute = location.pathname.startsWith('/admin/dashboard');
 
+  // Scroll to top on route change
   useEffect(() => {
-    const userInfo = localStorage.getItem('userInfo');
-    if (userInfo) {
-      setUser(JSON.parse(userInfo));
-    }
-  }, []);
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   return (
-    <Router>
-      <Toaster position="top-right" />
-      <Routes>
-        <Route path="/login" element={<Login setUser={setUser} />} />
-        <Route path="/signup" element={<Signup setUser={setUser} />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute user={user}>
-              <Dashboard user={user} setUser={setUser} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/events"
-          element={
-            <ProtectedRoute user={user}>
-              <AllEvents user={user} setUser={setUser} />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </Router>
-  );
+    <div className="flex flex-col min-h-screen">
+      {!isDashboardRoute && <TopBanner />}
+      {!isDashboardRoute && <Navbar onOpenEnquiry={() => setIsEnquiryModalOpen(true)} />}
+      <main className={`flex-grow ${!isDashboardRoute ? 'pt-[38px]' : ''}`}>
+        <Routes>
+          <Route path="/" element={<Home onOpenEnquiry={() => setIsEnquiryModalOpen(true)} />} />
+          <Route path="/projects" element={<Projects onOpenEnquiry={() => setIsEnquiryModalOpen(true)} />} />
+          <Route path="/projects/:id" element={<ProjectDetails onOpenEnquiry={() => setIsEnquiryModalOpen(true)} />} />
+          <Route path="/properties" element={<Properties onOpenEnquiry={() => setIsEnquiryModalOpen(true)} />} />
+          <Route path="/properties/:id" element={<PropertyDetails onOpenEnquiry={() => setIsEnquiryModalOpen(true)} />} />
+          <Route path="/about" element={<About onOpenEnquiry={() => setIsEnquiryModalOpen(true)} />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:id" element={<BlogDetails />} />
+          <Route path="/contact" element={<Contact onOpenEnquiry={() => setIsEnquiryModalOpen(true)} />} />
+          <Route path="/history" element={<History onOpenEnquiry={() => setIsEnquiryModalOpen(true)} />} />
+          <Route path="/community-welfare" element={<WelfareMedia />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard/*" element={<AdminDashboard />} />
+        </Routes>
+      </main>
+      {!isDashboardRoute && <Footer onOpenEnquiry={() => setIsEnquiryModalOpen(true)} />}
+
+      <PrivateEnquiryModal 
+        isOpen={isEnquiryModalOpen} 
+        onClose={() => setIsEnquiryModalOpen(false)} 
+      />
+    </div>
+  )
 }
 
-export default App;
+export default App
